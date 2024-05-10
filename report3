@@ -1,0 +1,228 @@
+#! /bin/bash
+#
+# Filename: report3
+#
+# Created by Michael Astfalk
+#
+# Created: Apr 26, 2024
+# Updated: May 2, 2024
+#
+# Description:
+# Prints out the desired report information based on the provided option.
+# -m        me (the same as whoami)
+# -i u      IP address of user
+# -i s      IP address of server
+# -n        username (for example, jonesb)
+# -f        fullname (of the user)
+# -d        home directory (for this user)
+# -s        shell (for this user, will probably be bash)
+# -p        password expiration info
+# -a n      show last n lines of web server access log for this user, n should be a positive int
+# -e n      show last n lines of web server error log for this user, n should be a positive int
+# -l n      this is letter l, gives last n logins (for this user)
+# -t        display system uptime
+# -u        show all logged in users
+# -w        report if the web server is running
+# -h        help (show this information)
+
+# Check the command line parameters. If there is one, change numLines to the parameter. If there are too many, give an error message and exit
+if [ $# -lt 1 ]
+then
+   echo "ERROR: this script requires at least one command line parameter, use -h to see help options"
+   echo
+   exit 1
+fi
+
+# Get username and IP address
+Username=`whoami`
+#InitialIPaddress=`last -i | grep "still logged in" | grep $Username | head -1 | tr -s ' ' | cut -d' ' -f3`
+InitialIPaddress=`who am i | cut -d '(' -f2 | cut -d ')' -f1`
+
+Username=`whoami`
+
+if [ "$1" = "-m" ]
+then
+   # run the whoami command
+   whoami
+   echo
+elif [ "$1" = "-i" ]
+then
+   if [ "$2" = "u" ]
+   then
+      # output the user's IP address
+      echo "The user's IP address is: $InitialIPaddress"
+      echo
+   elif [ "$2" = "s" ]
+   then
+      # get the server IP address using the netstat command
+      ServerIPaddress=`netstat -nt | grep ":22" -m 1 | cut -d ":" -f 1 | cut -c21-`
+      echo "The server's IP address is: $ServerIPaddress"
+      echo
+   else
+      # the user did not use a 'u' or an 's', so output an error message
+      echo "ERROR: invalid option, use -i u to get the user's IP address or -i s to get the server's IP address. Use the -h option to get more help info"
+      echo
+   fi
+elif [ "$1" = "-n" ]
+then
+   # get the username
+   echo "Username: $Username"
+   echo
+elif [ "$1" = "-f" ]
+then
+   # retrieve the full name from /etc/passwd
+   name=`grep $Username /etc/passwd | cut -d ':' -f 5`
+   echo "Full name: $name"
+   echo
+elif [ "$1" = "-d" ]
+then
+   # retrieve the home directory from /etc/passwd
+   directory=`grep $Username /etc/passwd | cut -d ':' -f 6`
+   echo "Home directory: $directory"
+   echo
+elif [ "$1" = "-s" ]
+then
+   # retrieve the shell from /etc/passwd
+   shell=`grep $Username /etc/passwd | cut -d ':' -f 7`
+   echo "Shell: $shell"
+   echo
+elif [ "$1" = "-p" ]
+then
+   # get the user's password information using chage
+   expire=`chage -l $Username | grep "Password expires" | cut -d ':' -f 2 | cut -c2-`
+   echo "Password expires: $expire"
+   echo
+elif [ "$1" = "-a" ]
+then
+   # check the number of parameters, output an error message if there are not 2 parameters
+   if [ "$#" -ne 2 ]
+   then
+      # output an error message
+      echo "ERROR: the -a option requires two parameters, the -a switch followed by a number n. Use the -h option to view more help info."
+      echo
+   # check to see if the user entered a negative number, if they did output an error message and quit
+   elif [ "$2" -lt 0 ]
+   then
+      echo "ERROR: n must be a positive integer. Use the -h option to view more help info."
+      echo
+      exit 1
+   else
+      # display the last n lines of the webserver log
+      n="$2"
+
+      echo "Fields are: IP address, date and time, HTTP method, path to page, query string, content type, status code,"
+      echo "content size (bytes), total size (bytes), client browser info, response time (microseconds)"
+      echo
+      grep "$InitialIPaddress" /var/log/httpd/access_log | grep -v '/pma/' | tail "-$n"
+      echo
+   fi
+elif [ "$1" = "-e" ]
+then
+   # check the number of parameters, output an error message if there are not 2 parameters
+   if [ "$#" -ne 2 ]
+   then
+      # output an error message
+      echo "ERROR: the -e option requires two parameters: the -e switch followed by a number n. Use the -h option to view more help info"
+      echo
+      exit 1
+   # check if the user entered a negative number, if they did set n to 0 instead
+   elif [ "$2" -lt 0 ]
+   then
+      echo "ERROR: n must be a positive integer. Use the -h option to view more help info."
+      echo
+      exit 1
+   else
+      # display the last n lines of the user's webserver error log
+      n="$2"
+
+      grep "$InitialIPaddress" /var/log/httpd/error_log | tail -$n
+      echo
+   fi
+elif [ "$1" = "-l" ]
+then
+   # check the number of parameters
+   if [ $# -ne 2 ]
+   then
+      # output an error message
+      echo "ERROR: the -l option requires two parameters: the -l switch and a number n. Use the -h option to view more help info"
+      echo
+      exit 1
+   # check if the user entered a negative number, if they did output an error message and exit
+   elif [ "$2" -lt 0 ]
+   then
+      echo "ERROR: n must be a positive integer. Use the -h option to view more help info."
+      echo
+      exit 1
+   else
+      #output the last n logins for the user
+      n="$2"
+
+      echo "Last $n logins for user $Username"
+      last -$n $Username | head -$n
+      echo
+   fi
+elif [ "$1" = "-t" ]
+then
+   # display the system uptime
+   echo "System uptime:"
+   w | head -n 1
+   echo
+elif [ "$1" = "-u" ]
+then
+   # display the current users on the system
+   echo "Current users on the system:"
+   echo "USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT"
+   w -h
+   echo
+elif [ "$1" = "-w" ]
+then
+   # report if the webserver is running
+   webserver=`ps -elf | grep httpd | grep root`
+   if [ "$webserver" = "" ]
+   then
+      echo "The web server is NOT running."
+   else
+     echo "The webserver is running."
+   fi
+   echo
+elif [ "$1" = "-h" ]
+then
+   # print out the help menu
+   echo "Prints out the desired report information based on the provided option."
+   echo
+   echo "-m        me (the same as whoami)"
+   echo
+   echo "-i u      IP address of user"
+   echo
+   echo "-i s      IP address of server"
+   echo
+   echo "-n        username (for example, jonesb)"
+   echo
+   echo "-f        fullname (of the user)"
+   echo
+   echo "-d        home directory (for this user)"
+   echo
+   echo "-s        shell (for this user, will probably be bash)"
+   echo
+   echo "-p        password expiration info"
+   echo
+   echo "-a n      show last n lines of web server access log for this user, n should be a positive int"
+   echo
+   echo "-e n      show last n lines of web server error log for this user, n should be a positive int"
+   echo
+   echo "-l n      this is letter l, gives last n logins (for this user)"
+   echo
+   echo "-t        display system uptime"
+   echo
+   echo "-u        show all logged in users"
+   echo
+   echo "-w        report if the web server is running"
+   echo
+   echo "-h        help (show this information)"
+   echo
+else
+   # an invalid command was entered, so output an error message and exit
+   echo "ERROR: command not found, use the -h option to view help info"
+   echo
+   exit 1
+fi

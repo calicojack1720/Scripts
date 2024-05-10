@@ -1,0 +1,77 @@
+#!/bin/bash
+# report1
+# Created by Michael Astfalk
+# Created: 4/4/2024
+# Updated: 4/12/2024
+# Description: Provides a short report on the account running the program. The program takes one optional parameter that specifies the number of previous
+# logins to print out. If no parameter is specified, the script will print out the previous 10 logins by default. The report displays the username, full 
+# user's name, the user's home directory, the user's shell, the password expiration for the account, the last 6 loginsfor the account, system uptime, the
+# current users that are logged in, open TCP ports on the system, and determines if the webserver is running.
+
+echo
+
+# get the current user's username
+user=`whoami`
+echo "Information for user: $user"
+
+echo
+
+# retrieve the full name from /etc/passwd
+name=`grep $user /etc/passwd | cut -d ':' -f 5`
+echo "Full name: $name"
+
+echo
+
+# retrieve the home directory from /etc/passwd
+directory=`grep $user /etc/passwd | cut -d ':' -f 6`
+echo "Home directory: $directory"
+
+echo
+
+# retrieve the shell from /etc/passwd
+shell=`grep $user /etc/passwd | cut -d ':' -f 7`
+echo "Shell: $shell"
+
+echo
+
+# get the user's password information using chage
+expire=`chage -l $user | grep "Password expires" | cut -d ':' -f 2 | cut -c2-`
+echo "Password expires: $expire"
+
+echo
+
+# if no parameter was entered, check the last 10 logins, else check the specified number of logins
+checkLogin=10
+if [ $# -eq 1 ]
+then
+  checkLogin=$1
+fi
+
+echo "Last $checkLogin logins for user $user"
+
+last -$checkLogin $user | head -$checkLogin
+
+echo
+
+# display uptime and users on the system
+echo "Uptime and users on this system:"
+w
+
+echo
+
+# get the open TCP ports
+echo "Open TCP ports:"
+netstat -ta
+
+echo
+
+# check to see if the webserver process is running
+webserver=`ps -elf | grep httpd | grep root`
+if [ "$webserver" = "" ]
+then
+  echo "The web server is NOT running."
+else
+  echo "The webserver is running."
+fi
+
+echo

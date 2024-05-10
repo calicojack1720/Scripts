@@ -1,0 +1,284 @@
+#! /bin/bash
+#
+# Filename: report2
+#
+# Created by Michael Astfalk
+#
+# Based on the webmonitor script by Br. David Carlson
+#
+# Created: Apr 14, 2024
+# Updated: Apr 20, 2024
+#
+# Description:
+# This script provides a menu of options to the user until the user enters the
+# the 'quit' option. Option 0 quits the program. Option 1 shows the username,
+# fullname, home directory, shell, password expiration info, and IP address.
+# Option 2 shows the last several lines of the webserver access log for the
+# user. Option 3 shows the last several lines of the webserver error log for
+# the user. Option 4 shows the last severla logins for the user. Option 5
+# shows something interesting. Option 6 shows the open TCP ports. Option 7
+# shows the system uptime, users on the system, and says whether the web
+# server appears to be running. Option 8 changes the default number of lines
+# to show in choices 2, 3, and 4. The default number of lines will be 15
+# unless otherwise specified using a parameter when running the script. For
+# example, running the program as './report2' sets the number of lines to 15
+# by default, but running './report2 n' where n is a small positive integer
+# will set the number of lines to n. If more than one command line parameter
+# is provided, an error message will be output to the screen and the program
+# will exit.
+
+# Check the command line parameters. If there is one, change numLines to the parameter. If there are too many, give an error message and exit
+if [ $# -gt 1 ]
+then
+   echo "ERROR: script only accepts 0 or 1 command line parameters"
+   exit 1
+elif [ $# -eq 1 ]
+then
+   if [ $1 -lt 0 ]
+   then
+       numLines="0"
+   else
+      numLines="$1"
+   fi
+else
+   numLines="15"
+fi
+
+# Get username and IP address
+Username=`whoami`
+#InitialIPaddress=`last -i | grep "still logged in" | grep $Username | head -1 | tr -s ' ' | cut -d' ' -f3`
+InitialIPaddress=`who am i | cut -d '(' -f2 | cut -d ')' -f1`
+ChosenIPaddress=$InitialIPaddress
+choice=1
+clear
+
+while [ "$choice" != "0" ]
+do
+   echo "IP address for your connection: $InitialIPaddress"
+   echo
+   echo "Report 2"
+   echo
+   echo "   0   Quit"
+   echo "   1   Display user info (username, full name, home directory, shell, password expiration, and IP address)"
+   echo "   2   Show the last $numLines lines of the webserver access log for $Username" 
+   echo "   3   Show the last $numLines lines of the webserver error log for $Username"
+   echo "   4   Show the last $numLines logins for $Username"
+   echo "   5   Displays the OS version, average CPU load, amount of free memory, and the number of running tasks"
+   echo "   6   Show the open TCP ports"
+   echo "   7   Display the uptime, current users on the system, and whether the webserver appears to be running"
+   echo "   8   Change the default number of lines to show for choices 2, 3, and 4"
+   echo
+   echo "Enter number for your choice: "
+   read choice
+
+   if [ "$choice" = "1" ]
+   then
+      # displays the current user's username, full name, home directory, shell, password information, and IP address
+      clear
+
+      echo
+      echo "Information for user: $Username"
+      echo
+
+      # retrieve the full name from /etc/passwd
+      name=`grep $Username /etc/passwd | cut -d ':' -f 5`
+      echo "Full name: $name"
+      echo
+
+      # retrieve the home directory from /etc/passwd
+      directory=`grep $Username /etc/passwd | cut -d ':' -f 6`
+      echo "Home directory: $directory"
+      echo
+
+      # retrieve the shell from /etc/passwd
+      shell=`grep $Username /etc/passwd | cut -d ':' -f 7`
+      echo "Shell: $shell"
+      echo
+
+      # get the user's password information using chage
+      expire=`chage -l $Username | grep "Password expires" | cut -d ':' -f 2 | cut -c2-`
+      echo "Password expires: $expire"
+      echo
+
+      # display the user's IP address
+      echo "IP address: $InitialIPaddress"
+      echo
+
+      echo "Press ENTER"
+      read junk
+   elif [ "$choice" = "2" ]
+   then
+      # displays the last numLines of the webserver access log
+      clear
+
+      echo
+      if [ -z $numLines ]
+      then
+         lines=15
+      fi
+
+      echo
+      echo "Enter the IP address to check (or press Enter for the initial IP address used in this session)"
+      read value
+      if [ $value ]
+      then
+         ChosenIPaddress=$value
+      else
+         ChosenIPaddress=$InitialIPaddress
+      fi
+
+      echo
+      echo "Fields are: IP address, date and time, HTTP method, path to page, query string, content type, status code,"
+      echo "content size (bytes), total size (bytes), client browser info, response time (microseconds)"
+      echo
+      grep "$ChosenIPaddress" /var/log/httpd/access_log | grep -v '/pma/' | tail "-$numLines"
+      echo
+      echo "Press ENTER"
+      read junk
+   elif [ "$choice" = "3" ]
+   then
+      # displays the last numLines of the webserver error log
+      clear
+
+      echo
+      echo "Enter the IP address to check (or press Enter for the initial IP address used in this session)"
+      read value
+      if [ $value ]
+      then
+         ChosenIPaddress=$value
+      else
+         ChosenIPaddress=$InitialIPaddress
+      fi
+
+      echo
+      grep "$ChosenIPaddress" /var/log/httpd/error_log | tail "-$numLines"
+      echo
+      echo "Press ENTER"
+      read junk
+   elif [ "$choice" = "4" ]
+   then
+      # displays the last numLines logins
+      clear
+
+      echo
+      echo "Last $numLines logins for user $Username"
+
+      last -$numLines $Username | head -$numLines
+      echo
+
+      echo "Press ENTER"
+      read junk
+   elif [ "$choice" = "5" ]
+   then
+      clear
+
+      # displays the OS version using the /etc/system-release file
+      echo
+      version=`cat /etc/system-release`
+      echo "OS Version: $version"
+      echo
+
+      # print the date and time and then get the CPU usage and the number of tasks running (total, running, sleeping, stopped, and zombie) using top
+      dateandtime=`date`
+      echo "Task info taken on $dateandtime"
+      echo
+
+      topresult=`top -b -n 1`
+
+      loadavg=`echo "$topresult" | grep "load average" | cut -d "," -f 6`
+      echo "Current load average (taken from last 15 minutes): $loadavg"
+      echo
+
+
+      idlecpu=`echo "$topresult" | grep "Cpu" | cut -d "," -f 4`
+      echo "% of Cpu that is idle: $idlecpu"
+      echo
+
+      freemem=`echo "$topresult" | grep "KiB Mem" | cut -d "," -f 2 | cut -d " " -f 4`
+      echo "Free Memory: $freemem KiB"
+      echo
+
+      total=`echo "$topresult" | grep "Tasks" | cut -d "," -f 1 | cut -d " " -f 2 | cut -d " " -f 1`
+      echo "Total Tasks: $total"
+
+      running=`echo "$topresult" | grep "Tasks" | cut -d "," -f 2 | cut -d " " -f 4 | cut -d " " -f 1`
+      echo "Running Tasks: $running"
+
+      sleeping=`echo "$topresult" | grep "Tasks" | cut -d "," -f 3 | cut -d " " -f 2`
+      echo "Sleeping Tasks: $sleeping"
+
+      stopped=`echo "$topresult" | grep "Tasks" | cut -d "," -f 4 | cut -d " " -f 4`
+      echo "Stopped Tasks: $stopped"
+
+      zombie=`echo "$topresult" | grep "Tasks" | cut -d "," -f 5 | cut -d " " -f4`
+      echo "Zombie Tasks: $zombie"
+
+      echo
+      echo "Press ENTER"
+      read junk
+   elif [ "$choice" = "6" ]
+   then
+      # displays the current open TCP ports
+      clear
+
+      echo
+      echo "Open TCP ports:"
+      netstat -ta
+
+      echo
+      echo "Press ENTER"
+      read junk
+   elif [ "$choice" = "7" ]
+   then
+      # displays the uptime, the users currently on the system, and checks if the webserver is running by searching through the running processes
+      clear
+
+      echo
+      echo "Uptime and users currently on the system:"
+      w
+      echo
+
+      # check to see if the webserver process is running
+      webserver=`ps -elf | grep httpd | grep root`
+      if [ "$webserver" = "" ]
+      then
+         echo "The web server is NOT running."
+      else
+        echo "The webserver is running."
+      fi
+      echo
+
+      echo "Press Enter"
+      read junk
+   elif [ "$choice" = "8" ]
+   then
+      # changes the value of numLines based on user input
+      clear
+
+      echo
+      echo "Enter the number of lines to show"
+      read numLines
+
+      if [ "$numLines" -lt 0 ]
+      then
+         numLines="0"
+      fi
+
+
+      echo
+      echo "Press Enter"
+      read junk
+   elif [ "$choice" != "0" ]
+   then
+      clear
+
+      echo
+      echo "No such menu option"
+      echo
+      echo "Press ENTER"
+      read junk
+   fi
+
+   clear
+done
+
