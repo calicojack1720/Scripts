@@ -21,3 +21,6 @@ plugged in. So far, all of these Ducky scripts have been written for Windows 10 
   7. With the desired script open in Arduino, select Tools > Board and choose Digispark (Default – 16.5mhz) as your default board.
   8. Click verify and then upload. Plug your Attiny85 into your computer to program the rubber ducky.
   9. Your ducky should now be ready and should run when you plug it into a computer.
+
+## powershell
+ - ClamFileScan.ps1: automates updating ClamAv's defninitions and running a scan on a file or directory using ClamAV.
