@@ -5,7 +5,7 @@
 # Updated: 5/30/24
 # Created by calicojack1720
 
-#Set-Location <uncomment this line and put the path to your ClamAV folder here
+#Set-Location <uncomment this line and put the path to your ClamAV folder here>
 
 Write-Output "Welcome to ClamFileScan, an automated method for scanning directories and files with ClamAV!"
 Write-Output "This script must be placed within the folder containing your ClamAV files in order to work correctly."
