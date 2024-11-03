@@ -27,6 +27,6 @@ plugged in. So far, all of these Ducky scripts have been written for Windows 10 
  - adfsLockout.ps1: checks a given user's lockout status on ADFS and then gives the option to unlock the account based on Familiar and Unfamiliar location lockout (must be run with admin privileges on an ADFS server).
 
 ## python
- - GetPractice.py: a simple webscraper for practice results at www.formula1.com.Requires you to enter the URL, the name of the race, and the session and then uses BeautifulSoup to get page values. The table values are output in a format that can be easily copied and pasted into a csv file.
+ - GetPractice.py: a simple webscraper for practice results at www.formula1.com. Requires you to enter the URL, the name of the race, and the session and then uses BeautifulSoup to get page values. The table values are output in a format that can be easily copied and pasted into a csv file.
 
 ![13df0372-b2f8-4187-ba3b-9fd17cccb8ce_text-3335221232](https://github.com/user-attachments/assets/4d2e7bd2-b5a1-4025-81a6-74f6ba0e2236)
