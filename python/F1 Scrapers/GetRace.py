@@ -31,7 +31,7 @@ if response.status_code == 200:
                 laps = columns[4].text.strip()
                 time = columns[5].text.strip()
                 pts = columns[6].text.strip()
-                print(f"{position},{car_no},{laps},{time},{pts},{race_type}")
+                print(f"{race_name},{position},{car_no},{laps},{time},{pts},{race_type}")
                 
     else:
         print("No results found!")
