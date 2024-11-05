@@ -4,17 +4,19 @@
 import sys
 import requests
 from bs4 import BeautifulSoup
-import numpy as np
+import csv
 
 def ScrapePractice(purl):
     
-    for x in 3:
-        psessionURL = purl + x
+    for x in range(4):
+        psessionURL = purl + "/" + str(x)
         # Send a GET request to the URL
         response = requests.get(psessionURL)
 
         # Check if the request was successful
         if response.status_code == 200:
+            race_type = 0
+            
             # Parse the HTML content of the page
             soup = BeautifulSoup(response.content, 'html.parser')
             
@@ -47,12 +49,16 @@ def ScrapeQualifying(qurl):
 
     # Check if the request was successful
     if response.status_code == 200:
+        race_type = 0
+        
         # Parse the HTML content of the page
         soup = BeautifulSoup(response.content, 'html.parser')
         
         # Find and print the title of the page
         title = soup.title.string
         print(f"Page Title: {title}")
+
+        print(f"Race,Position,Car No,Time,Gap,Laps,Session")
         
         # Find and print all the practice session results
         results_table = soup.find(id="maincontent")
@@ -83,6 +89,8 @@ def ScrapeRace(rurl):
 
     # Check if the request was successful
     if response.status_code == 200:
+        race_type = 0
+        
         # Parse the HTML content of the page
         soup = BeautifulSoup(response.content, 'html.parser')
         
@@ -110,7 +118,14 @@ def ScrapeRace(rurl):
     else:
         print(f"Failed to retrieve race results. Status code: {response.status_code}")
 
-baseURL = sys.argv[0]
+
+#if len(sys.argv) < 1:
+#    print(f"No website provided, quitting...")
+#    exit
+
+#baseURL = sys.argv[0]
+baseURL = input("Enter base url: ")
+race_name = "Mexico"
 practiceURL = baseURL + "/practice"
 qualifyingURL = baseURL + "/qualifying"
 raceURL = baseURL + "/race-result"
