@@ -20,7 +20,7 @@ if response.status_code == 200:
     # Find and print all the practice session results
     results_table = soup.find(id="maincontent")
     if results_table:
-        print(f"Race,Position,Car No, Time, Gap, Laps,Session")
+        print(f"Race,Position,Car No,Time,Gap,Laps,Session")
         rows = results_table.find_all('tr')
         for row in rows:
             columns = row.find_all('td')
