@@ -18,7 +18,7 @@ if response.status_code == 200:
     title = soup.title.string
     print(f"Page Title: {title}")
     
-    # Find and print all the practice session results
+    # Find and print all the race results
     results_table = soup.find(id="maincontent")
     if results_table:
         print(f"Race,Position,CarNo,Laps,Time,Pts,Type")
