@@ -83,7 +83,10 @@ def ScrapeQualifying(qurl):
     else:
         print(f"Failed to retrieve qualifying results. Status code: {response.status_code}")
 
-def ScrapeRace(rurl):
+def ScrapeRace(url):
+    
+    rurl = url + "/race-result"
+
     # Send a GET request to the URL
     response = requests.get(rurl)
 
@@ -125,7 +128,7 @@ def ScrapeRace(rurl):
 
 #baseURL = sys.argv[0]
 baseURL = input("Enter base url: ")
-race_name = "Mexico"
+race_name = input("Enter the race name: ")
 practiceURL = baseURL + "/practice"
 qualifyingURL = baseURL + "/qualifying"
 raceURL = baseURL + "/race-result"
