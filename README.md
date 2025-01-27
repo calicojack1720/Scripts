@@ -11,6 +11,7 @@ These scripts are written for making a Ducky using a digispark attiny85 USB devi
 plugged in. So far, all of these Ducky scripts have been written for Windows 10 and 11.
  - reverseDucky: Uses powershell to connect to a netcat listener and start a reverse shell.
       - Issues: Currently needs to be properly tested, may not be fully functional.
+ - RickRoll: uses powershell to automatically Rick-roll someone
 ### Instructions for Creating a Ducky
   1. Install Arduino IDE at https://www.arduino.cc/en/software
   2. Open up Arduino IDE and select File > Preferences.
