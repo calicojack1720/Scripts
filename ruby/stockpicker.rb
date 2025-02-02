@@ -10,7 +10,7 @@ Updated: 2/2/2025
 def stock_picker(stock_arr)
   buy_day = 0
   sell_day = 0
-  profit = 0
+  profit = -1
 
   for i in 0..stock_arr.length-1
     for j in i..stock_arr.length-1
