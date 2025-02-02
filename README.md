@@ -36,3 +36,8 @@ plugged in. So far, all of these Ducky scripts have been written for Windows 10 
 ![13df0372-b2f8-4187-ba3b-9fd17cccb8ce_text-3335221232](https://github.com/user-attachments/assets/4d2e7bd2-b5a1-4025-81a6-74f6ba0e2236)
 
  - net_scan.py: asks for an ip address and a port range and then prints out the results. This script requires the python-nmap package.
+
+## ruby
+ - bubblesort.rb: a method implementing bubblesort
+ - stockpicker.rb: solution to the Odin Project Stockpicker project. Given an array of stock prices, the method returns the optimal buy and sell days.
+ - substrings.rb: solution to the Odin Project Substrings project. Given a string and a dictionary of words, the method returns a count of all dictionary words foud in the string.
