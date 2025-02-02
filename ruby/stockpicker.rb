@@ -2,7 +2,7 @@
 stockpicker.rb
 Written by calicojack1720
 Created: 1/31/2025
-Updated: 1/31/2025
+Updated: 2/2/2025
 =end
 
 # Precondition: stock_arr is an array of stocks with each element representing the stocks on a single day
