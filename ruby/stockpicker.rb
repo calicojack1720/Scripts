@@ -13,7 +13,7 @@ def stock_picker(stock_arr)
   profit = 0
 
   for i in 0..stock_arr.length-1
-    for j in 0..stock_arr.length-1
+    for j in i..stock_arr.length-1
       if stock_arr[j] - stock_arr[i] > profit
         profit = stock_arr[j] - stock_arr[i]
         buy_day = i
